@@ -1,27 +1,53 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://battle/battle.gd" id="1_battle"]
+[ext_resource type="Script" path="res://battle/map/battle_map.gd" id="2_map"]
+[ext_resource type="Script" path="res://battle/ui/battle_camera.gd" id="3_camera"]
+[ext_resource type="Script" path="res://battle/ui/selection_controller.gd" id="4_select"]
 
 [node name="Battle" type="Node2D"]
 script = ExtResource("1_battle")
 
-[node name="Ground" type="ColorRect" parent="."]
-offset_left = -2000.0
-offset_top = -2000.0
-offset_right = 2000.0
-offset_bottom = 2000.0
-mouse_filter = 2
-color = Color(0.36, 0.45, 0.27, 1)
+[node name="Background" type="CanvasLayer" parent="."]
+layer = -1
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Fill" type="ColorRect" parent="Background"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.12, 0.13, 0.11, 1)
+
+[node name="Map" type="Node2D" parent="."]
+script = ExtResource("2_map")
+
+[node name="Markers" type="Node2D" parent="."]
+
+[node name="Units" type="Node2D" parent="."]
+
+[node name="Camera" type="Camera2D" parent="."]
+script = ExtResource("3_camera")
 
 [node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="SelectionController" type="Control" parent="HUD"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_select")
 
 [node name="InfoLabel" type="Label" parent="HUD"]
 unique_name_in_owner = true
 offset_left = 16.0
 offset_top = 16.0
-offset_right = 616.0
+offset_right = 1016.0
 offset_bottom = 72.0
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4

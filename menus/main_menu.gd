@@ -1,5 +1,5 @@
 extends Control
-## Main menu. Milestone 1: start an empty battle or quit.
+## Main menu: quick battle on the sandbox map, campaign (later), quit.
 
 @onready var _battle_button: Button = %QuickBattleButton
 @onready var _campaign_button: Button = %CampaignButton

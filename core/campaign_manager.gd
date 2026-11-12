@@ -19,16 +19,11 @@ func has_campaign() -> bool:
 
 ## Loads data/campaigns/<id>.json. Returns false if missing or invalid.
 func load_campaign(id: StringName) -> bool:
-	var path := CAMPAIGN_DATA_DIR + String(id) + ".json"
-	if not FileAccess.file_exists(path):
-		push_error("Campaign data not found: %s" % path)
-		return false
-	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
-	if typeof(parsed) != TYPE_DICTIONARY:
-		push_error("Campaign data is not a JSON object: %s" % path)
+	var data := DataLoader.load_json(CAMPAIGN_DATA_DIR + String(id) + ".json")
+	if data.is_empty():
 		return false
 	campaign_id = id
-	campaign_data = parsed
+	campaign_data = data
 	completed_battles.clear()
 	return true
 

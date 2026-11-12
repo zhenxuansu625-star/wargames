@@ -1,0 +1,23 @@
+{
+	"id": "sandbox",
+	"name": "Sandbox",
+	"_notes": "Test map for Milestones 2+. Not historical. Coordinates are world pixels; pixels_per_meter converts unit speeds and sizes.",
+	"map": {
+		"size": [3200, 2400],
+		"pixels_per_meter": 8,
+		"nav_agent_radius_m": 2.5,
+		"obstacles": [
+			{ "kind": "building", "polygon": [[1100, 700], [1500, 700], [1500, 1000], [1100, 1000]] },
+			{ "kind": "building", "polygon": [[1700, 1300], [2000, 1300], [2000, 1700], [1700, 1700]] },
+			{ "kind": "water", "polygon": [[600, 1500], [900, 1350], [1250, 1450], [1300, 1750], [950, 1900], [650, 1800]] },
+			{ "kind": "building", "polygon": [[2300, 500], [2500, 500], [2500, 1100], [2300, 1100]] }
+		]
+	},
+	"camera_start": [900, 1000],
+	"formation_spacing_m": 8,
+	"units": [
+		{ "id": "1st_squad", "template": "us_rifle_squad", "name": "1st Squad", "position": [600, 900] },
+		{ "id": "2nd_squad", "template": "us_rifle_squad", "name": "2nd Squad", "position": [600, 1000] },
+		{ "id": "3rd_squad", "template": "us_rifle_squad", "name": "3rd Squad", "position": [520, 1100] }
+	]
+}

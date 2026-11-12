@@ -34,6 +34,12 @@ func elapsed_seconds() -> float:
 	return tick_count * tick_length()
 
 
+## How far (0..1) real time has progressed into the next tick. Use it to
+## interpolate rendering between previous and current sim positions.
+func interpolation_alpha() -> float:
+	return clampf(_accumulator / tick_length(), 0.0, 1.0)
+
+
 ## Feed [param delta] real seconds; returns how many ticks the sim should run.
 func advance(delta: float) -> int:
 	if paused or delta <= 0.0:

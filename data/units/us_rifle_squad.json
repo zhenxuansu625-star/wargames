@@ -1,0 +1,10 @@
+{
+	"id": "us_rifle_squad",
+	"name": "Rifle Squad (US)",
+	"kind": "squad",
+	"side": "allies",
+	"_notes": "1944 US Army rifle squad: 12 men (squad leader, assistant, BAR team, riflemen). Source: FM 7-10 Rifle Company (1942/1944), TO&E 7-17. move_speed_mps is game-compressed (real infantry advancing ~1.5-2 m/s); tune for feel.",
+	"soldiers": 12,
+	"move_speed_mps": 5.0,
+	"selection_radius_m": 2.5
+}
