@@ -16,6 +16,9 @@
 - gdUnit4 6.2.3 is vendored in `addons/gdUnit4` (its own internal test folder is left out) and the editor plugin is enabled. `run_tests.sh` runs the suite headless.
 - Example test: `tests/battle/sim/test_battle_clock.gd` (4 cases, all passing).
 
+**CI**
+- `.github/workflows/tests.yml` runs the gdUnit4 suite through `godot-gdunit-labs/gdUnit4-action@v1.4.2` (formerly `MikeSchulze/gdUnit4-action`) on Godot 4.7.2, using the vendored gdUnit4 6.2.3. It runs on pushes to `main`, on PRs and on manual dispatch. The test report is published as a check run; this is skipped for fork PRs, which can't write checks.
+
 **Verified**
 - `./run_tests.sh` reports 4/4 passing with Godot 4.7.2.
 - Headless smoke run: all 5 autoloads present, menu → Quick Battle → battle ticking → Esc → menu, and save/load round-trip of `GameState` all work with no script errors.

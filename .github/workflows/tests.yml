@@ -1,0 +1,36 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write # publish the gdUnit4 test report as a check run
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gdunit4:
+    name: gdUnit4 tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      # gdUnit4-action (formerly MikeSchulze/gdUnit4-action; the repo moved to
+      # godot-gdunit-labs). Pinned to an exact release.
+      - uses: godot-gdunit-labs/gdUnit4-action@v1.4.2
+        with:
+          # Keep in sync with the Godot version in CLAUDE.md / project.godot.
+          godot-version: '4.7.2'
+          # Use the gdUnit4 plugin vendored in addons/gdUnit4 (6.2.3).
+          version: 'installed'
+          paths: 'res://tests'
+          timeout: 10
+          # Check runs can't be created from fork PRs (read-only token).
+          publish-report: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
