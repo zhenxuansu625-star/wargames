@@ -1,0 +1,16 @@
+# Godot
+.godot/
+*.import
+/android/
+export_presets.cfg
+
+# gdUnit4 test output
+reports/
+addons/gdUnit4/GdUnitRunner.cfg
+.gdunit/
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
