@@ -7,6 +7,7 @@
 - Autoloads (in `core/`, in this load order): `EventBus`, `Ruleset`, `GameState`, `CampaignManager`, `SaveSystem`.
 - Folder layout follows PLAN.md section 10. There is one addition: `menus/` holds front-end screens (main menu) that don't belong to battle, economy or campaign.
 - Tests use **gdUnit4 6.2.3**, vendored in `addons/gdUnit4/`. Test suites go under `tests/` and mirror the source path, e.g. `tests/battle/sim/test_battle_clock.gd`.
+- Battle world units are pixels; data files use metres and each map's `pixels_per_meter` converts them. Data files are JSON, read with `DataLoader` (`core/data_loader.gd`).
 - CI: `.github/workflows/tests.yml` runs `res://tests` with gdUnit4-action on pushes to `main` and on PRs, using the vendored plugin (`version: installed`). If you upgrade Godot or gdUnit4, update `godot-version` there too.
 
 ## Commands
