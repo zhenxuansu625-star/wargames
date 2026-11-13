@@ -17,4 +17,5 @@ fi
 if [ $# -eq 0 ]; then
     set -- -a res://tests
 fi
-exec ./addons/gdUnit4/runtest.sh --godot_binary "$GODOT_BIN" --headless --ignoreHeadlessMode "$@"
+# --continue: report every failing test instead of stopping at the first.
+exec ./addons/gdUnit4/runtest.sh --godot_binary "$GODOT_BIN" --headless --ignoreHeadlessMode --continue "$@"

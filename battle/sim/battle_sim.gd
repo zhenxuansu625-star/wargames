@@ -48,22 +48,30 @@ func tick(dt: float) -> void:
 	for id in _order:
 		var unit := _units[id]
 		unit.previous_position = unit.position
-		Movement.step(unit, dt)
+		unit.orders.update(unit, self, dt)
+
+
+func find_path(from: Vector2, to: Vector2) -> PackedVector2Array:
+	return path_finder.call(from, to)
 
 
 ## Orders the given units to move to [param target]. A group keeps a grid
 ## formation centred on the target, facing the direction of travel.
-func order_move(ids: Array[StringName], target: Vector2) -> void:
-	var movers: Array[SimUnit] = []
-	for id in ids:
-		if _units.has(id):
-			movers.append(_units[id])
+## With [param queue] the move is added after each unit's existing orders
+## (formation planned from where they will be by then); otherwise it
+## replaces them.
+func issue_move(ids: Array[StringName], target: Vector2, queue: bool = false) -> void:
+	var movers := _existing(ids)
 	if movers.is_empty():
 		return
 
+	# Where each unit will start this move from.
+	var starts: Dictionary[StringName, Vector2] = {}
 	var centre := Vector2.ZERO
 	for unit in movers:
-		centre += unit.position
+		var start := unit.orders.planned_end_position(unit.position) if queue else unit.position
+		starts[unit.id] = start
+		centre += start
 	centre /= movers.size()
 	var heading := (target - centre).angle() if target != centre else 0.0
 
@@ -72,11 +80,27 @@ func order_move(ids: Array[StringName], target: Vector2) -> void:
 	# the frontage they are.
 	var across := Vector2.from_angle(heading).orthogonal()
 	movers.sort_custom(func(a: SimUnit, b: SimUnit) -> bool:
-		return a.position.dot(across) < b.position.dot(across))
+		return starts[a.id].dot(across) < starts[b.id].dot(across))
 	offsets.sort_custom(func(a: Vector2, b: Vector2) -> bool:
 		return a.dot(across) < b.dot(across))
 
 	for i in movers.size():
-		var unit := movers[i]
-		var path: PackedVector2Array = path_finder.call(unit.position, target + offsets[i])
-		unit.set_path(path)
+		var order := MoveOrder.new(target + offsets[i])
+		if queue:
+			movers[i].orders.append(order, movers[i], self)
+		else:
+			movers[i].orders.replace(order, movers[i], self)
+
+
+## Cancels all orders of the given units; they stop where they are.
+func issue_stop(ids: Array[StringName]) -> void:
+	for unit in _existing(ids):
+		unit.orders.clear(unit)
+
+
+func _existing(ids: Array[StringName]) -> Array[SimUnit]:
+	var result: Array[SimUnit] = []
+	for id in ids:
+		if _units.has(id):
+			result.append(_units[id])
+	return result

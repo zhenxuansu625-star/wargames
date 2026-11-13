@@ -10,8 +10,10 @@ const DEFAULT_TICK_RATE := 20
 
 ## Simulation ticks per second of battle time.
 var tick_rate: int = DEFAULT_TICK_RATE
-## Multiplier on real time (game speed controls, Milestone 3).
+## Multiplier on real time (game speed controls).
 var speed: float = 1.0
+## Speeds the player can step through with the speed controls.
+var speed_steps: Array[float] = [0.25, 0.5, 1.0, 2.0, 4.0]
 var paused: bool = false
 ## Total ticks simulated so far.
 var tick_count: int = 0
@@ -22,6 +24,26 @@ var _accumulator: float = 0.0
 func _init(rate: int = DEFAULT_TICK_RATE) -> void:
 	assert(rate > 0, "tick rate must be positive")
 	tick_rate = rate
+
+
+func toggle_pause() -> bool:
+	paused = not paused
+	return paused
+
+
+## Moves to the next faster (+1) or slower (-1) entry of speed_steps and
+## returns the new speed. Stays put at either end.
+func step_speed(direction: int) -> float:
+	if speed_steps.is_empty():
+		return speed
+	# Index of the step closest to the current speed.
+	var index := 0
+	for i in speed_steps.size():
+		if absf(speed_steps[i] - speed) < absf(speed_steps[index] - speed):
+			index = i
+	index = clampi(index + signi(direction), 0, speed_steps.size() - 1)
+	speed = speed_steps[index]
+	return speed
 
 
 ## Seconds of battle time per tick.

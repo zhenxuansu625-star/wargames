@@ -1,5 +1,47 @@
 # Progress
 
+## Milestone 3: Pause & orders (done)
+
+**What's in place**
+- **Orders (`battle/orders/`, pure logic, tested):**
+  - `UnitOrder` is the base order with a `start` / `update` / `cancel` lifecycle and `planned_end_position()`.
+  - `MoveOrder` finds its path when it *starts*, from wherever the unit is then, so queued legs chain correctly.
+  - `OrderQueue` holds each unit's current order plus queued ones. An order given to an idle unit starts immediately, even while paused, so its path shows before time resumes.
+- **Sim:** `SimUnit.orders` holds the queue. `BattleSim.issue_move(ids, target, queue)` replaces the unit's orders or appends to them. A queued group move plans its formation from where each unit will be at the end of its queue. `issue_stop(ids)` clears orders. `tick()` now runs each unit's queue.
+- **Time:** `BattleClock.toggle_pause()` and `step_speed(±1)` move through `speed_steps` (0.25×, 0.5×, 1×, 2×, 4×). Pausing stops sim ticks only; the camera, selection and orders keep working.
+- **UI (`battle/ui/`):**
+  - `TimeControls` is the top-right Pause/Resume, −, speed and + widget. Its buttons never take keyboard focus, so Space always pauses.
+  - `PauseOverlay` draws a gold frame and a "PAUSED" banner while paused.
+  - Selected squads draw their current path solid and queued legs as dashed lines to numbered waypoints, with a "+N" badge for queued orders.
+- `EventBus.battle_paused_changed` and the new `battle_speed_changed` are emitted.
+- New input actions: `battle_pause` (Space, Pause), `game_speed_up` (=, keypad +), `game_speed_down` (−, keypad −), `order_stop` (X), `order_queue` (Shift).
+- `run_tests.sh` now passes `--continue`, so every failing test is reported instead of stopping at the first.
+
+**Controls:** LMB select / drag a box, Shift+LMB add to selection, RMB move, Shift+RMB queue a move, X stop, Space pause, +/− speed, WASD/arrows or middle-mouse drag to pan, mouse wheel to zoom, Esc back to menu.
+
+**Verified**
+- `./run_tests.sh`: 46/46 passing (9 suites), stable across repeated runs. New tests:
+  - order-queue lifecycle;
+  - move orders path from their start position;
+  - queued group formations;
+  - stop;
+  - clock pause and speed steps;
+  - speed label formatting;
+  - a scene-level test that pause freezes time while orders are still accepted, a queue built while paused runs in order after resuming, and 2× speed covers twice the ground.
+- Scripted run of the real game under a virtual display, with synthetic keyboard and mouse input:
+  - Space paused the battle and showed the overlay;
+  - box select and right-click / Shift+right-click while paused built a 3-order queue for each squad, and nothing moved or ticked;
+  - `=` twice gave 4× ("4x");
+  - clicking Resume unpaused without touching the selection;
+  - the squads ran their whole queues;
+  - X stopped one selected squad while the others kept going;
+  - `−` dropped to 2×, and Esc returned to the menu.
+
+**Known issues / notes**
+- Clicks on the time-control panel are absorbed by the panel (by design), so you can't order a move to a spot underneath it.
+- Order types so far: move and stop. Attack-move, attack, hold fire and the rest come with the systems they need (Milestone 4+).
+- Still no unit-to-unit avoidance while moving (see Milestone 2).
+
 ## Milestone 2: Selection & movement (done)
 
 **What's in place**
@@ -60,4 +102,4 @@
 - Opening the project in the editor for the first time may add gdUnit4 settings to `project.godot`. Commit those.
 
 ## Next step
-**Milestone 3: Pause & orders.** Space pauses the `BattleClock` (with an on-screen pause overlay in `battle/ui/`), orders can be issued while paused, an order queue per unit in `battle/orders/` (Shift+right-click appends), and game-speed controls. `BattleSim.order_move()` should become one order type in that queue.
+**Milestone 4: Shooting.** Two opposing squads (add an axis squad to `data/battles/sandbox.json`), weapon stats in `data/equipment/` (range bands, rate of fire, accuracy), a combat resolver in `battle/sim/` that rolls hits per tick and removes soldiers, an attack order in `battle/orders/` (with attack-move if cheap), and `EventBus.unit_killed`. Keep the dice seedable so combat tests are deterministic.

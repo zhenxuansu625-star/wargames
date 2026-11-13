@@ -28,3 +28,28 @@ func test_speed_multiplier_scales_ticks() -> void:
 	var clock := BattleClock.new(20)
 	clock.speed = 2.0
 	assert_int(clock.advance(0.5)).is_equal(20)
+
+
+func test_toggle_pause() -> void:
+	var clock := BattleClock.new(20)
+	assert_bool(clock.toggle_pause()).is_true()
+	assert_int(clock.advance(1.0)).is_equal(0)
+	assert_bool(clock.toggle_pause()).is_false()
+	assert_int(clock.advance(1.0)).is_equal(20)
+
+
+func test_step_speed_walks_steps_and_clamps() -> void:
+	var clock := BattleClock.new(20)
+	assert_float(clock.step_speed(1)).is_equal(2.0)
+	assert_float(clock.step_speed(1)).is_equal(4.0)
+	assert_float(clock.step_speed(1)).is_equal(4.0)
+	clock.speed = 1.0
+	assert_float(clock.step_speed(-1)).is_equal(0.5)
+	assert_float(clock.step_speed(-1)).is_equal(0.25)
+	assert_float(clock.step_speed(-1)).is_equal(0.25)
+
+
+func test_step_speed_from_off_step_value_snaps_to_nearest() -> void:
+	var clock := BattleClock.new(20)
+	clock.speed = 1.9
+	assert_float(clock.step_speed(1)).is_equal(4.0)

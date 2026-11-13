@@ -2,12 +2,12 @@ extends Node2D
 ## Battle scene root. Loads the battle data, builds the map and units, steps
 ## the BattleSim on the fixed-tick BattleClock and renders it.
 ##
-## Milestone 2: friendly squads that can be selected and moved with
-## pathfinding, plus camera pan/zoom. Pause and orders arrive in Milestone 3.
+## Time controls live here: Space pauses (the clock stops ticking but orders
+## can still be given), +/- change game speed.
 
 const SQUAD_SCENE := preload("res://battle/units/squad.tscn")
 const DEFAULT_BATTLE: StringName = &"sandbox"
-const HELP_TEXT := "LMB select / drag box   Shift+LMB add   RMB move   WASD/arrows or MMB drag pan   wheel zoom   Esc menu"
+const HELP_TEXT := "LMB select / box   Shift+LMB add   RMB move   Shift+RMB queue move   X stop\nSpace pause   +/- speed   WASD/arrows or MMB drag pan   wheel zoom   Esc menu"
 
 @onready var _map: BattleMap = $Map
 @onready var _units_layer: Node2D = $Units
@@ -15,6 +15,8 @@ const HELP_TEXT := "LMB select / drag box   Shift+LMB add   RMB move   WASD/arro
 @onready var _camera: BattleCamera = $Camera
 @onready var _selection_controller: SelectionController = %SelectionController
 @onready var _info_label: Label = %InfoLabel
+@onready var _time_controls: TimeControls = %TimeControls
+@onready var _pause_overlay: PauseOverlay = %PauseOverlay
 
 var battle_id: StringName
 var clock := BattleClock.new()
@@ -34,6 +36,9 @@ func _ready() -> void:
 	_selection_controller.selection = selection
 	_selection_controller.camera = _camera
 	_selection_controller.move_requested.connect(_on_move_requested)
+	_time_controls.pause_pressed.connect(toggle_pause)
+	_time_controls.speed_step_requested.connect(step_speed)
+	_refresh_time_ui()
 
 	EventBus.battle_started.emit(battle_id)
 
@@ -76,8 +81,9 @@ func _process(delta: float) -> void:
 	var alpha := clock.interpolation_alpha()
 	for view: SquadView in _views.values():
 		view.sync(alpha)
-	_info_label.text = "%s   |   t = %.1f s   |   selected: %d\n%s" % [
-		data_name(), clock.elapsed_seconds(), selection.size(), HELP_TEXT
+	_info_label.text = "%s   |   t = %.1f s%s   |   selected: %d\n%s" % [
+		data_name(), clock.elapsed_seconds(), "  (paused)" if clock.paused else "",
+		selection.size(), HELP_TEXT
 	]
 
 
@@ -86,6 +92,48 @@ func _unhandled_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 		EventBus.battle_ended.emit(battle_id, &"abandoned")
 		GameState.go_to_main_menu()
+	elif event.is_action_pressed(&"battle_pause"):
+		get_viewport().set_input_as_handled()
+		toggle_pause()
+	elif event.is_action_pressed(&"game_speed_up"):
+		get_viewport().set_input_as_handled()
+		step_speed(1)
+	elif event.is_action_pressed(&"game_speed_down"):
+		get_viewport().set_input_as_handled()
+		step_speed(-1)
+	elif event.is_action_pressed(&"order_stop"):
+		get_viewport().set_input_as_handled()
+		sim.issue_stop(selection.ids())
+
+
+func is_paused() -> bool:
+	return clock.paused
+
+
+func set_paused(paused: bool) -> void:
+	if clock.paused == paused:
+		return
+	clock.paused = paused
+	_refresh_time_ui()
+	EventBus.battle_paused_changed.emit(paused)
+
+
+func toggle_pause() -> void:
+	set_paused(not clock.paused)
+
+
+## Steps game speed faster (+1) or slower (-1).
+func step_speed(direction: int) -> void:
+	var before := clock.speed
+	clock.step_speed(direction)
+	if clock.speed != before:
+		_refresh_time_ui()
+		EventBus.battle_speed_changed.emit(clock.speed)
+
+
+func _refresh_time_ui() -> void:
+	_time_controls.show_state(clock.paused, clock.speed)
+	_pause_overlay.visible = clock.paused
 
 
 func data_name() -> String:
@@ -97,8 +145,8 @@ func _on_selection_changed() -> void:
 		_views[id].selected = selection.has(id)
 
 
-func _on_move_requested(target: Vector2) -> void:
-	sim.order_move(selection.ids(), target)
+func _on_move_requested(target: Vector2, queued: bool) -> void:
+	sim.issue_move(selection.ids(), target, queued)
 	var marker := MoveMarker.new()
 	marker.position = target
 	_markers_layer.add_child(marker)

@@ -19,6 +19,8 @@ signal battle_ended(battle_id: StringName, result: StringName)
 # --- Battle time -----------------------------------------------------------
 @warning_ignore("unused_signal")
 signal battle_paused_changed(paused: bool)
+@warning_ignore("unused_signal")
+signal battle_speed_changed(speed: float)
 
 # --- Battle events ---------------------------------------------------------
 @warning_ignore("unused_signal")

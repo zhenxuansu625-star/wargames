@@ -23,6 +23,9 @@ var previous_position: Vector2 = Vector2.ZERO
 ## Direction the unit faces, in radians (0 = +x).
 var facing: float = 0.0
 
+## Current order and the orders queued behind it.
+var orders: OrderQueue = OrderQueue.new()
+
 ## Waypoints still to visit; path[path_index] is the current target.
 var path: PackedVector2Array = PackedVector2Array()
 var path_index: int = 0

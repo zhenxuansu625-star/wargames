@@ -3,12 +3,13 @@ extends Control
 ## Mouse selection and move commands for the battle:
 ## - left click a unit to select it, left click empty ground to deselect
 ## - left drag to box-select; hold Shift to add to the selection
-## - right click to order the selected units to move there
+## - right click to order the selected units to move there; Shift+right
+##   click queues the move after their current orders
 ##
 ## Covers the screen on the HUD layer, draws the drag box, and works on
 ## sim units through BattleSim / Selection (no node references to units).
 
-signal move_requested(world_target: Vector2)
+signal move_requested(world_target: Vector2, queued: bool)
 
 ## Drags shorter than this (screen pixels) count as clicks.
 const DRAG_THRESHOLD := 6.0
@@ -55,7 +56,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		queue_redraw()
 	elif event.is_action_pressed(&"command"):
 		if not selection.is_empty():
-			move_requested.emit(camera.screen_to_world(event.position))
+			move_requested.emit(camera.screen_to_world(event.position),
+					Input.is_action_pressed(&"order_queue"))
 		get_viewport().set_input_as_handled()
 
 
